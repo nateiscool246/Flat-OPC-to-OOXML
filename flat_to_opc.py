@@ -1,6 +1,6 @@
 # coding: utf-8
 u"""
-This code steals heavily from docx_utils :func:`~docx_utils.flatten.opc_to_flat_opc`
+This code is written very similarly to docx_utils :func:`~docx_utils.flatten.opc_to_flat_opc`
 with the base idea coming from Eric White's blog `Transforming Flat OPC Format to Open XML Documents
 <https://web.archive.org/web/20130511174646/http://blogs.msdn.com/b/ericwhite/archive/2008/09/29/transforming-flat-opc-format-to-open-xml-documents.aspx/>`
 """
