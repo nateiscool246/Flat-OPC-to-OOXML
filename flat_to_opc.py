@@ -82,7 +82,14 @@ def find_packages(flat_path):
         uri = part.attrib["{{{pkg}}}name".format(pkg=pkg)]
         content_type = part.attrib["{{{pkg}}}contentType".format(pkg=pkg)]
         if content_type.endswith("xml"):
-            data = etree.tostring(list(list(part)[0])[0])
+            data = etree.tostring(
+                list(list(part)[0])[0],
+                xml_declaration=True,
+                encoding="UTF-8",
+                pretty_print=False,
+                with_tail=False,
+                standalone=True,
+            )
         else:
             chunks = list(part)[0].text
             encoded = list(filter(lambda char: char not in ["\n", "\r"], chunks))
@@ -103,18 +110,7 @@ def flat_to_opc(src_path, dest_path):
     with zipfile.ZipFile(dest_path, mode="w") as f:
         for file in find_packages(src_path):
             content_types.add_content(file.uri, file.content_type)
-            doc = etree.fromstring(file.data)
-            f.writestr(
-                file.uri[1:],
-                etree.tostring(
-                    doc,
-                    xml_declaration=True,
-                    encoding="UTF-8",
-                    pretty_print=False,
-                    with_tail=False,
-                    standalone=True,
-                ),
-            )
+            f.writestr(file.uri[1:], file.data)
         f.writestr("[Content_Types].xml", content_types.write_xml_data())
 
 
@@ -138,11 +134,7 @@ def flat_to_opc_bytes(src_path) -> bytes:
                 file.uri[1:],
                 etree.tostring(
                     doc,
-                    xml_declaration=True,
-                    encoding="UTF-8",
-                    pretty_print=False,
-                    with_tail=False,
-                    standalone=True,
+                    
                 ),
             )
         f.writestr("[Content_Types].xml", content_types.write_xml_data())
