@@ -77,7 +77,15 @@ def find_packages(flat_path):
     else:
         content = flat_path.encode("utf-8")
 
-    tree: etree._ElementTree = etree.fromstring(content)
+    try:
+        tree: etree._ElementTree = etree.fromstring(content)
+    except etree.XMLSyntaxError as e:
+        if "huge text node" in str(e):
+            parser = etree.XMLParser(huge_tree=True)
+            tree: etree._ElementTree = etree.fromstring(content, parser=parser)
+        else:
+            raise e
+    
     for part in tree.xpath("//pkg:part", namespaces=ns):
         uri = part.attrib["{{{pkg}}}name".format(pkg=pkg)]
         content_type = part.attrib["{{{pkg}}}contentType".format(pkg=pkg)]
@@ -129,14 +137,7 @@ def flat_to_opc_bytes(src_path) -> bytes:
     with zipfile.ZipFile(zip_buffer, mode="w") as f:
         for file in find_packages(src_path):
             content_types.add_content(file.uri, file.content_type)
-            doc = etree.fromstring(file.data)
-            f.writestr(
-                file.uri[1:],
-                etree.tostring(
-                    doc,
-                    
-                ),
-            )
+            f.writestr(file.uri[1:], file.data)
         f.writestr("[Content_Types].xml", content_types.write_xml_data())
 
     return zip_buffer.getvalue()
